@@ -1,4 +1,5 @@
 import tensorflow as tf
+import numpy as np
 import random
 import pathlib
 # 下载测试数据
@@ -12,6 +13,7 @@ def load_and_preprocess_from_path_label(path, label):
     image = tf.image.decode_jpeg(image, channels=3)
     image = tf.image.resize(image, [192, 192])  # 原始图片大小为(266, 320, 3)，重设为(192, 192)
     image /= 255.0  # 归一化到[0,1]范围
+    print(label)
     return image, label
 
 data_path = pathlib.Path("../../data/flower_photos")
@@ -25,8 +27,13 @@ label_names = sorted(item.name for item in data_path.glob('*/') if item.is_dir()
 label_to_index = dict((name, index) for index, name in enumerate(label_names))
 
 all_image_labels = [label_to_index[pathlib.Path(path).parent.name] for path in all_image_paths]
+l = [0, 0, 0, 0, 0]
+lb = []
+for i in all_image_labels:
+    l[i] = 1
+    lb.append(l)
 
-ds = tf.data.Dataset.from_tensor_slices((all_image_paths, all_image_labels))
+ds = tf.data.Dataset.from_tensor_slices((all_image_paths, lb))
 
 ds = ds.map(load_and_preprocess_from_path_label)
 ds = ds.repeat(1)
